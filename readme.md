@@ -110,21 +110,137 @@ chmod 600 /etc/msmtprc
 echo "Criando script de auditoria de inicializacao..."
 cat > /usr/local
 
-# 10. Suricata estou fazendo aguarde.
+# 10. Guia Prático: Segurança Avançada (Suricata IPS) no Ubuntu 26.04
+
+#**Objetivo:** Implementar um Sistema de Prevenção de Intrusões (IPS) no modo "Drop" (Bloqueio Ativo) operando nativamente no sistema, protegendo a navegação e os dados sem interferir em outras ferramentas gráficas de firewall (como o UFW).
 
 
-##############################################
-Selecione para colar até a palavra local acima.
-Depois
-Ctrl +O #No editor para salvar
-Ctrl +x #No editor para sair
+## Fase 10.1: Atualização e Instalação Base
+
+# A segurança começa com um sistema atualizado. Nesta etapa, preparamos o terreno e instalamos o motor do Suricata a partir do seu repositório oficial.
+
+# Abra o terminal e execute os comandos abaixo:
+
+# Atualizar listas e pacotes do sistema (Upgrades)
+sudo apt update && sudo apt upgrade -y
+
+# Adicionar o repositório oficial do Suricata
+sudo add-apt-repository ppa:oisf/suricata-stable -y
+
+# Atualizar repositórios novamente e instalar os pacotes necessários
+sudo apt update
+sudo apt install suricata jq -y
+
+
+## **Copie para colar até a linha acima.**
+
 sudo chmod +x ./hardening.sh
 sudo ./hardening.sh
 
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+## Abaixo tudo; comando a comando, aqui você mantem seu sistema rodando, mesmo sobre ataques "zero day", portanto se estiveres com sono ou pressa, deixe para outra hora, leva 15 minutos, mas um erro e nada funciona.
 
+## Para ir acima deste ponto gratutito, fornecido abaixo, voce precisará gastar cerca de U$20,000.00 em mensalidades fora hardware, portanto, é para médias e grandes empresas com patentes.
 
+A referência é PaloAlto. O tipo de cliente no Brasil, acho que apenas o governo.
 
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+## Fase 10.2: Calibragem do Motor e Rede Local
 
+# Para que o Suricata funcione perfeitamente dentro da própria máquina e não bloqueie o seu tráfego legítimo por falsos-positivos (como downloads de atualizações do sistema), precisamos desativar a checagem de integridade local.
 
+# 1. Abra o arquivo principal de configuração:
+
+sudo nano /etc/suricata/suricata.yaml
+# No meu caso na linha baixo mudou de /16 para /24, se não tens nenhuma ideia do que fazes mude para /24.
+# 2. **Definição da Rede:** Verifique se a variável `HOME_NET` (próxima ao topo) contém as faixas `"[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]"`. Isso garante que sua rede local e túneis de VPN estejam cobertos.
+# 3. **Desativação do Checksum:** Pressione `Ctrl + W` para abrir a pesquisa, digite `stream:` e pressione Enter. Imediatamente abaixo dessa linha, adicione a instrução `checksum-validation: no`, respeitando o recuo estrutural do YAML:
+
+# O arquivo tem muitas linhas e esta do meio para o final esta parte, tenha calma. tem coisa parecida bem no começo,e não é, vai dar merda.
+
+stream:
+  checksum-validation: no
+  memcap: 64mb
+
+4. Salve e feche o arquivo (`Ctrl + O`, `Enter`, `Ctrl + X`).
+
+## Fase 10,3: A Lista de Extermínio (Regras de Bloqueio)
+
+# Nesta etapa, criamos o arquivo que orienta a inteligência do sistema sobre quais categorias de tráfego malicioso devem ser ativamente destruídas.
+
+# 1. Copie o bloco inteiro abaixo e cole no terminal para gerar o arquivo de regras de forma automática:
+
+sudo tee /etc/suricata/drop.conf > /dev/null <<EOF
+re:classtype:trojan-activity
+re:classtype:attempted-admin
+re:classtype:attempted-user
+re:classtype:web-application-attack
+re:classtype:network-scan
+re:classtype:bad-unknown
+2100498
+EOF
+
+# 2. Baixe as assinaturas de segurança mundiais atualizadas e aplique a nossa inteligência de bloqueio:
+
+sudo suricata-update --drop-conf /etc/suricata/drop.conf
+
+## Fase 10.4: Modo de Interceptação de Fila (NFQUEUE)
+
+# O Ubuntu gerencia os serviços de retaguarda de forma rigorosa via `systemd`. Vamos alterar a inicialização de fábrica do Suricata para que ele intercepte diretamente o tráfego do kernel (Fila 0), em vez de apenas atuar como um observador passivo.
+
+# Copie e cole o bloco completo no terminal:
+
+sudo systemctl stop suricata
+sudo mkdir -p /etc/systemd/system/suricata.service.d
+sudo tee /etc/systemd/system/suricata.service.d/override.conf > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/suricata -c /etc/suricata/suricata.yaml --pidfile /run/suricata.pid --user suricata --group suricata -q 0
+Type=simple
+EOF
+sudo systemctl daemon-reload
+sudo systemctl start suricata
+
+## Fase 10.5: Automação e Redirecionamento de Tráfego
+
+# Para garantir estabilidade e evitar conflitos com a interface gráfica do firewall do Ubuntu (UFW), utilizaremos o agendador de tarefas do sistema (`cron`). Ele ativará a proteção automaticamente ao ligar o computador e atualizará as vacinas contra novas ameaças quatro vezes ao dia.
+
+1. Abra o painel de agendamento do superusuário:
+
+sudo crontab -e
+
+# *(Caso seja solicitada a escolha de um editor, digite o número correspondente ao `nano`).*
+
+# 2. Navegue até a última linha do arquivo e cole estas instruções:
+
+@reboot sleep 10 && iptables -I INPUT -j NFQUEUE --queue-bypass
+@reboot sleep 10 && iptables -I OUTPUT -j NFQUEUE --queue-bypass
+0 1,3,5,7,9,,10,12,13,15,17,19,21,23 * * * /usr/bin/suricata-update --drop-conf /etc/suricata/drop.conf && systemctl reload suricata
+
+3. Salve e saia do editor (`Ctrl + O`, `Enter`, `Ctrl + X`).
+4. Para ativar a proteção imediatamente, sem a necessidade de reiniciar a máquina, execute:
+
+sudo iptables -I INPUT -j NFQUEUE --queue-bypass
+sudo iptables -I OUTPUT -j NFQUEUE --queue-bypass
+
+## Fase 10.6: Homologação e Teste de Resposta
+
+# O seu escudo está armado e operacional. Para homologar a instalação, simularemos uma requisição maliciosa padronizada para sistemas de detecção.
+
+# 1. No terminal, execute o disparo de teste:
+
+curl [http://testmynids.org/uid/index.html](http://testmynids.org/uid/index.html)
+
+# > **Nota de Comportamento:** O comando deve apresentar lentidão extrema (congelamento) ou retornar uma mensagem de falha/tempo limite esgotado. A página não deve carregar.
+
+# 2. Para comprovar visualmente o bloqueio, em novo terminal, leia o log de eventos de segurança:
+
+# sudo cat /var/log/suricata/fast.log | tail -n 2
+
+# **Resultado esperado:** O sistema retornará o registro do ataque com a marcação `[Drop]` no início da linha, confirmando que o pacote malicioso foi neutralizado e descartado antes de alcançar o seu ambiente de trabalho.
+
+Good Luck !!!
+
+EOF
