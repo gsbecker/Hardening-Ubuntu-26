@@ -2,6 +2,10 @@
 
 Este documento consolida as melhores práticas de hardening para ambientes acadêmicos e profissionais, unificando os scripts de auditoria passiva, defesas de rede locais, integração de alertas via email, implantação do IPS Suricata no modo Drop, e finalizando com a robustez da autenticação via hardware (Chaves FIDO2/U2F).
 
+sudo su
+sudo nano hardeing.sh #Copie e cole tudo que está abaixo.
+
+
 ## Fase 1: Configuração do Webmail (Gmail)
 
 Para que o servidor consiga enviar relatórios de segurança de forma automatizada e invisível na inicialização, é necessário gerar uma "Senha de Aplicativo". O Google exige isso para conexões via linha de comando.
@@ -105,3 +109,22 @@ chmod 600 /etc/msmtprc
 # 9. Script de Coleta de Logs de Boot
 echo "Criando script de auditoria de inicializacao..."
 cat > /usr/local
+
+# 10. Suricata estou fazendo aguarde.
+
+
+##############################################
+Selecione para colar até a palavra local acima.
+Depois
+Ctrl +O #No editor para salvar
+Ctrl +x #No editor para sair
+sudo chmod +x ./hardening.sh
+sudo ./hardening.sh
+
+
+
+
+
+
+
+
