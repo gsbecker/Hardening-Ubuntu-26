@@ -1,14 +1,14 @@
-# Guia Completo: Hardening e Segurança Avançada no Ubuntu 26.04
+## Guia Completo: Hardening e Segurança Avançada no Ubuntu 26.04
 
 Este documento consolida as melhores práticas de hardening para ambientes acadêmicos e profissionais,
 unificando os scripts de auditoria passiva, defesas de rede locais, integração de alertas via email,
 implantação do IPS Suricata no modo Drop, e
 finalizando com a robustez da autenticação via hardware (Chaves FIDO2/U2F).
 
-## Fase 1: Configuração do Webmail (Gmail)
+# Fase 1: Configuração do Webmail (Gmail)
 
-# Para que o servidor consiga enviar relatórios de segurança de forma automatizada e invisível na inicialização,
-# é necessário gerar uma "Senha de Aplicativo". O Google exige isso para conexões via linha de comando.
+Para que o servidor consiga enviar relatórios de segurança de forma automatizada e invisível na inicialização,
+é necessário gerar uma "Senha de Aplicativo". O Google exige isso para conexões via linha de comando.
 
 1. Acesse sua conta Google no navegador: `myaccount.google.com`.
 2. No menu lateral esquerdo, clique em **Segurança**.
@@ -17,13 +17,12 @@ finalizando com a robustez da autenticação via hardware (Chaves FIDO2/U2F).
 5. No campo "Nome do app", digite algo para identificar (ex: Hardening Ubuntu) e clique em Criar.
 6. Copie a senha de 16 letras gerada (na hora de inserir no script abaixo, utilize-a **sem espaços**).
 
-## Fase 2: O Script Unificado de Instalação e Hardening
+# Fase 2: O Script Unificado de Instalação e Hardening
 
 
-# > **ATENÇÃO:** Antes de executar o script, altere os campos `MEU_EMAIL` e `MINHA_SENHA_APP` nas primeiras linhas,
-# >  do código colocando seus dados correspondentes. Note que os possíveis erros de sintaxe nos parâmetros de kernel foram rigorosamente corrigidos para esta versão.
+> **ATENÇÃO:** Antes de executar o script, altere os campos `MEU_EMAIL` e `MINHA_SENHA_APP` nas primeiras linhas,
+>  do código colocando seus dados correspondentes. Note que os possíveis erros de sintaxe nos parâmetros de kernel foram rigorosamente corrigidos para esta versão.
 
-# ```bash
 # !/bin/bash
 
 MEU_EMAIL="SEU_EMAIL_AQUI@gmail.com"
