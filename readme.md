@@ -1,14 +1,14 @@
 # Guia Completo: Hardening e Segurança Avançada no Ubuntu 26.04
 
-Este documento consolida as melhores práticas de hardening para ambientes acadêmicos e profissionais, unificando os scripts de auditoria passiva, defesas de rede locais, integração de alertas via email, implantação do IPS Suricata no modo Drop, e finalizando com a robustez da autenticação via hardware (Chaves FIDO2/U2F).
-
-sudo su
-sudo nano hardeing.sh #Copie e cole tudo que está abaixo.
-
+Este documento consolida as melhores práticas de hardening para ambientes acadêmicos e profissionais,
+unificando os scripts de auditoria passiva, defesas de rede locais, integração de alertas via email,
+implantação do IPS Suricata no modo Drop, e
+finalizando com a robustez da autenticação via hardware (Chaves FIDO2/U2F).
 
 ## Fase 1: Configuração do Webmail (Gmail)
 
-Para que o servidor consiga enviar relatórios de segurança de forma automatizada e invisível na inicialização, é necessário gerar uma "Senha de Aplicativo". O Google exige isso para conexões via linha de comando.
+# Para que o servidor consiga enviar relatórios de segurança de forma automatizada e invisível na inicialização,
+# é necessário gerar uma "Senha de Aplicativo". O Google exige isso para conexões via linha de comando.
 
 1. Acesse sua conta Google no navegador: `myaccount.google.com`.
 2. No menu lateral esquerdo, clique em **Segurança**.
@@ -19,19 +19,27 @@ Para que o servidor consiga enviar relatórios de segurança de forma automatiza
 
 ## Fase 2: O Script Unificado de Instalação e Hardening
 
-Copie o bloco de código abaixo, cole em um editor de texto simples (como o Nano no terminal) e salve o arquivo como `hardening.sh`.
 
-> **ATENÇÃO:** Antes de executar o script, altere os campos `MEU_EMAIL` e `MINHA_SENHA_APP` nas primeiras linhas do código colocando seus dados correspondentes. Note que os possíveis erros de sintaxe nos parâmetros de kernel foram rigorosamente corrigidos para esta versão.
+# > **ATENÇÃO:** Antes de executar o script, altere os campos `MEU_EMAIL` e `MINHA_SENHA_APP` nas primeiras linhas,
+# >  do código colocando seus dados correspondentes. Note que os possíveis erros de sintaxe nos parâmetros de kernel foram rigorosamente corrigidos para esta versão.
 
-```bash
-#!/bin/bash
+# ```bash
+# !/bin/bash
+
 MEU_EMAIL="SEU_EMAIL_AQUI@gmail.com"
 MINHA_SENHA_APP="SUA_SENHA_DE_16_LETRAS_AQUI_SEM_ESPACOS"
+
+Copie o bloco de código abaixo, editando o email e cole em um editor de texto simples (como o Nano no terminal),
+e salve o arquivo como `hardening.sh`.
+
+sudo su
+sudo nano hardeing.sh #Copie e cole tudo que está abaixo.
+
 
 echo "Iniciando Hardening para Ubuntu 26.04..."
 
 # 1. Instalação de Ferramentas de Auditoria e Segurança
-apt update
+apt update && full-upgrade -y && auto-remove
 apt install libpam-tmpdir apt-listchanges needrestart debsums rkhunter auditd wtmpdb sysvinit-utils msmtp msmtp-mta mailutils ufw -y
 
 # 2. Ativação de Serviços de Auditoria
@@ -112,17 +120,20 @@ cat > /usr/local
 
 # 10. Guia Prático: Segurança Avançada (Suricata IPS) no Ubuntu 26.04
 
-#**Objetivo:** Implementar um Sistema de Prevenção de Intrusões (IPS) no modo "Drop" (Bloqueio Ativo) operando nativamente no sistema, protegendo a navegação e os dados sem interferir em outras ferramentas gráficas de firewall (como o UFW).
+#**Objetivo:** Implementar um Sistema de Prevenção de Intrusões (IPS) no modo "Drop" (Bloqueio Ativo),
+# operando nativamente no sistema, protegendo a navegação e os dados sem interferir em;
+# outras ferramentas gráficas de firewall (como o UFW).
 
 
 ## Fase 10.1: Atualização e Instalação Base
 
-# A segurança começa com um sistema atualizado. Nesta etapa, preparamos o terreno e instalamos o motor do Suricata a partir do seu repositório oficial.
+# A segurança começa com um sistema atualizado.
+# Nesta etapa, preparamos o terreno e instalamos o motor do Suricata a partir do seu repositório oficial.
 
 # Abra o terminal e execute os comandos abaixo:
 
 # Atualizar listas e pacotes do sistema (Upgrades)
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt full-upgrade -y && sudo auto-remove
 
 # Adicionar o repositório oficial do Suricata
 sudo add-apt-repository ppa:oisf/suricata-stable -y
@@ -131,29 +142,38 @@ sudo add-apt-repository ppa:oisf/suricata-stable -y
 sudo apt update
 sudo apt install suricata jq -y
 
-
 ## **Copie para colar até a linha acima.**
 
+Ctrl +o # para salvar
+Ctrl +x # para sair
 sudo chmod +x ./hardening.sh
 sudo ./hardening.sh
 
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-## Abaixo tudo; comando a comando, aqui você mantem seu sistema rodando, mesmo sobre ataques "zero day", portanto se estiveres com sono ou pressa, deixe para outra hora, leva 15 minutos, mas um erro e nada funciona.
+## Abaixo tudo; comando a comando, aqui você mantem seu sistema rodando, mesmo sobre ataques "zero day",
+# portanto se estiveres com sono ou pressa, deixe para outra hora, leva 15 minutos, mas um erro e nada funciona.
 
-## Para ir acima deste ponto gratutito, fornecido abaixo, voce precisará gastar cerca de U$20,000.00 em mensalidades fora hardware, portanto, é para médias e grandes empresas com patentes.
+## Para ir acima deste ponto gratutito, fornecido abaixo, voce precisará gastar cerca de U$20,000.00 em mensalidades,
+# fora hardware, portanto, é para médias e grandes empresas com patentes.
 
-A referência é PaloAlto. O tipo de cliente no Brasil, acho que apenas o governo.
+# A referência é PaloAlto. O tipo de cliente no Brasil, acho que apenas bancos o governo federal.
 
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 ## Fase 10.2: Calibragem do Motor e Rede Local
 
-# Para que o Suricata funcione perfeitamente dentro da própria máquina e não bloqueie o seu tráfego legítimo por falsos-positivos (como downloads de atualizações do sistema), precisamos desativar a checagem de integridade local.
+# Para que o Suricata funcione perfeitamente dentro da própria máquina e não bloqueie o seu tráfego legítimo,
+# por falsos-positivos (como downloads de atualizações do sistema), precisamos desativar a checagem de integridade local.
 
 # 1. Abra o arquivo principal de configuração:
 
 sudo nano /etc/suricata/suricata.yaml
+
+# Edite... com calma, e bem acordado.
+
 # No meu caso na linha baixo mudou de /16 para /24, se não tens nenhuma ideia do que fazes mude para /24.
 # 2. **Definição da Rede:** Verifique se a variável `HOME_NET` (próxima ao topo) contém as faixas `"[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]"`. Isso garante que sua rede local e túneis de VPN estejam cobertos.
 # 3. **Desativação do Checksum:** Pressione `Ctrl + W` para abrir a pesquisa, digite `stream:` e pressione Enter. Imediatamente abaixo dessa linha, adicione a instrução `checksum-validation: no`, respeitando o recuo estrutural do YAML:
@@ -161,8 +181,12 @@ sudo nano /etc/suricata/suricata.yaml
 # O arquivo tem muitas linhas e esta do meio para o final esta parte, tenha calma. tem coisa parecida bem no começo,e não é, vai dar merda.
 
 stream:
-  checksum-validation: no
-  memcap: 64mb
+  memcap: 64 MiB
+  #memcap-policy: ignore
+  checksum-validation: no      # reject incorrect csums
+  #midstream: false
+  #midstream-policy: ignore
+
 
 4. Salve e feche o arquivo (`Ctrl + O`, `Enter`, `Ctrl + X`).
 
@@ -217,7 +241,7 @@ sudo crontab -e
 
 @reboot sleep 10 && iptables -I INPUT -j NFQUEUE --queue-bypass
 @reboot sleep 10 && iptables -I OUTPUT -j NFQUEUE --queue-bypass
-0 1,3,5,7,9,,10,12,13,15,17,19,21,23 * * * /usr/bin/suricata-update --drop-conf /etc/suricata/drop.conf && systemctl reload suricata
+0 1,3,5,7,9,11,13,15,17,19,21,23 * * * /usr/bin/suricata-update --drop-conf /etc/suricata/drop.conf && systemctl reload suricata
 
 3. Salve e saia do editor (`Ctrl + O`, `Enter`, `Ctrl + X`).
 4. Para ativar a proteção imediatamente, sem a necessidade de reiniciar a máquina, execute:
@@ -231,16 +255,36 @@ sudo iptables -I OUTPUT -j NFQUEUE --queue-bypass
 
 # 1. No terminal, execute o disparo de teste:
 
-curl [http://testmynids.org/uid/index.html](http://testmynids.org/uid/index.html)
+sudo snap install curl
+curl http://testmynids.org/uid/index.html
 
 # > **Nota de Comportamento:** O comando deve apresentar lentidão extrema (congelamento) ou retornar uma mensagem de falha/tempo limite esgotado. A página não deve carregar.
 
 # 2. Para comprovar visualmente o bloqueio, em novo terminal, leia o log de eventos de segurança:
 
-# sudo cat /var/log/suricata/fast.log | tail -n 2
+sudo cat /var/log/suricata/fast.log | tail -n 2
+## Deve aparecer coisa do tipo abaixo:
+06/03/2026-09:51:02.564453  [Drop] [**] [1:2100498:7] GPL ATTACK_RESPONSE id check returned root [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 13.227.207.16:80 -> 
+## Parte foi ocultada para minha segurança, mas o computador está sofrendo ataques sem parar em varias portas, tendando root ou admin em outros sistemas.
+# como o ataque é controlado, se ele conseguir, apenas não faz nada, mas se fosse um zero day real, poderia ser um ranwsomeware com travamento imediato e pedido de resgate.
+# Já existiram, governos pagando para regatar servidores, e de mais dinheiro que o Brasil. É com este tipo de coisa que estais a mexer.
 
-# **Resultado esperado:** O sistema retornará o registro do ataque com a marcação `[Drop]` no início da linha, confirmando que o pacote malicioso foi neutralizado e descartado antes de alcançar o seu ambiente de trabalho.
+# Não recomento ires mais longe que isto, usando TOR, por exemplo, se não fores reporter ou policial. A PF vem de certeza, se não veier, vem a interpool, mandando na PF.
 
-Good Luck !!!
+# Tem gente na dark-web, que não é este público, e não vai preso, mas trabalham para militares inderetamente, da merda até para policial federal usando de casa,
+# lembre da história da interpool.
+
+# Existe um limite, que voce deve se permitir ser observado, se voce some na internet, pode sumir na vida real. Até hoje a DEA, só prendeu duas pessoas.
+# Pablo Escobar, e Maduro. E oficialmente, nunca mataram ninguem, porque não há corpos.
+# É disto que estou falando, sumir na internet, significa para quem não pode, que a pessoa será tele-transportada por ETs, digamos assim.
+
+# Neste tipo de ET acretido, passa nas TVs locais ao vivo e todos, menos "Pablo Escobar" e "Nicolas Maduro" entraram na nave espacial.
+# Apesar de que os ETs, levaram os dois depois de comerem o dinheiro deles.
+# E os ETs, ainda repartem os lucros com os moradores locais, nem que seja de um País inteiro.
+
+# **Resultado esperado:** O sistema retornará o registro do ataque com a marcação `[Drop]` no início da linha,
+# confirmando que o pacote malicioso foi neutralizado e descartado antes de alcançar o seu ambiente de trabalho.
+
+Best Regards !!!
 
 EOF
